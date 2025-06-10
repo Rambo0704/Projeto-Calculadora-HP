@@ -23,20 +23,19 @@ void InserirChar(Pilha_Caracter *s, const char* value) {
 }
 
 void RetirarChar(Pilha_Caracter *s, char* dest) {
-    if (verificarPilha_Caracter(s)) { 
-        printf("Erro: Pilha de strings vazia!\n");
-        exit(1);
-    }
     strcpy(dest, s->items[(s->top)--]);
 }
 
 char* getFormaInFixa(char *Str) {
     Pilha_Caracter pilha;
-    initPilha_Caracter(&pilha);
+    CriarPilha_Caracter(&pilha);
     
     static char finalResult[max_express];
 
-    char *token = strtok(Str, " ");
+    char copia[max_express];
+    strcpy(copia, Str);
+
+    char *token = strtok(copia, " ");
     
     while (token != NULL) {
         if (strcmp(token, "+") != 0 && strcmp(token, "-") != 0 &&
