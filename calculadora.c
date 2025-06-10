@@ -3,7 +3,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h> 
-
+#include "calculadora.h"
 
 #define max_express 512
 #define max_itens 50 
@@ -22,15 +22,15 @@ void InserirChar(Pilha_Caracter *s, const char* value) {
     strcpy(s->items[++(s->top)], value);
 }
 
-void RetirarChar(Pilha_Caracter *s, char* dest) {
-    strcpy(dest, s->items[(s->top)--]);
+void RetirarChar(Pilha_Caracter *s, char* value) {
+    strcpy(value, s->items[(s->top)--]);
 }
 
 char* getFormaInFixa(char *Str) {
     Pilha_Caracter pilha;
     CriarPilha_Caracter(&pilha);
     
-    static char finalResult[max_express];
+    static Expressao finalResult;
 
     char copia[max_express];
     strcpy(copia, Str);
@@ -73,6 +73,7 @@ char* getFormaInFixa(char *Str) {
         token = strtok(NULL, " ");
     }
 
-    RetirarChar(&pilha, finalResult);
-    return finalResult;
+    RetirarChar(&pilha, finalResult.inFixa);
+    return finalResult.inFixa;
 }
+
