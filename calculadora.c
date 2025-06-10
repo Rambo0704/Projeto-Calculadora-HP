@@ -6,9 +6,13 @@
 #include "calculadora.h"
 
 #define max_express 512
-#define max_itens 50 
+#define max_itens 50
+typedef struct 
+{
+    char expressao[max_express];
+} Item;
 typedef struct {
-    char items[max_itens][max_express]; 
+    Item items[max_itens];
     int top;
 } Pilha_Caracter;
 void CriarPilha_Caracter(Pilha_Caracter *s) {
@@ -19,11 +23,11 @@ void InserirChar(Pilha_Caracter *s, const char* value) {
         printf("Erro: Estouro da pilha de strings!\n");
         exit(1);
     }
-    strcpy(s->items[++(s->top)], value);
+    strcpy(s->items[++(s->top)].expressao, value);
 }
 
 void RetirarChar(Pilha_Caracter *s, char* value) {
-    strcpy(value, s->items[(s->top)--]);
+    strcpy(value, s->items[(s->top)--].expressao);
 }
 
 char* getFormaInFixa(char *Str) {
@@ -76,4 +80,62 @@ char* getFormaInFixa(char *Str) {
     RetirarChar(&pilha, finalResult.inFixa);
     return finalResult.inFixa;
 }
+char* getFormaPosFixa(char *Str) {
+    static Expressao finalResult;
+    finalResult.inFixa[0] = '\0';
+    Pilha_Caracter operadores;
+    CriarPilha_Caracter(&operadores);
 
+    char copia[max_express];
+    strcpy(copia, Str);
+    char *token = strtok(copia, " ");
+
+    while (token != NULL) {
+        char c = token[0];
+        if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+            strcat(finalResult.inFixa, token);
+            strcat(finalResult.inFixa, " ");
+        } else {
+            int prec;
+            if (strcmp(token, "^") == 0) {
+                prec = 3;
+            } else if (strcmp(token, "*") == 0 || strcmp(token, "/") == 0 || strcmp(token, "%") == 0) {
+                prec = 2;
+            } else {
+                prec = 1; 
+            }
+            while (operadores.top >= 0) {
+                char topo[max_express];
+                strcpy(topo, operadores.items[operadores.top].expressao);
+
+                int precTopo;
+                if (strcmp(topo, "^") == 0) {
+                    precTopo = 3;
+                } else if (strcmp(topo, "*") == 0 || strcmp(topo, "/" ) == 0 || strcmp(topo, "%" ) == 0) {
+                    precTopo = 2;
+                } else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) {
+                    precTopo = 1;
+                } else {
+                    precTopo = 0;
+                }
+
+                if (precTopo >= prec) {
+                    RetirarChar(&operadores, topo);
+                    strcat(finalResult.inFixa, topo);
+                    strcat(finalResult.inFixa, " ");
+                } else {
+                    break;
+                }
+            }
+            InserirChar(&operadores, token);
+        }
+        token = strtok(NULL, " ");
+    }
+    while (operadores.top >= 0) {
+        char op[max_express];
+        RetirarChar(&operadores, op);
+        strcat(finalResult.inFixa, op);
+        strcat(finalResult.inFixa, " ");
+    }
+    return finalResult.inFixa;
+}
