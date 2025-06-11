@@ -6,7 +6,7 @@
 #include "calculadora.h"
 
 int main() {
-    char expr[] = "(45 + 60) * cos(30)";
+    char expr[] = "(3 + 4) * 5";
     printf("%s\n", getFormaPosFixa(expr));
     return 0;
 }

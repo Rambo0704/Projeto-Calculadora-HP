@@ -30,6 +30,16 @@ void RetirarChar(Pilha_Caracter *s, char* value) {
     strcpy(value, s->items[(s->top)--].expressao);
 }
 
+int prioridade(const char* op) {
+    if (strcmp(op, "^") == 0) return 4;
+    if (strcmp(op, "*") == 0 || strcmp(op, "/" ) == 0 || strcmp(op, "%") == 0) return 3;
+    if (strcmp(op, "+") == 0 || strcmp(op, "-") == 0) return 2;
+    return 0;
+}
+bool associativoADireita(const char* op) {
+    return (strcmp(op, "^") == 0);
+}
+
 char* getFormaInFixa(char *Str) {
     Pilha_Caracter pilha;
     CriarPilha_Caracter(&pilha);
@@ -80,49 +90,44 @@ char* getFormaInFixa(char *Str) {
     RetirarChar(&pilha, finalResult.inFixa);
     return finalResult.inFixa;
 }
-char* getFormaPosFixa(char *Str) {
-    static Expressao finalResult;
-    finalResult.inFixa[0] = '\0';
+char *getFormaPosFixa(char *Str) {
     Pilha_Caracter operadores;
     CriarPilha_Caracter(&operadores);
 
-    char copia[max_express];
-    strcpy(copia, Str);
-    char *token = strtok(copia, " ");
+    static Expressao finalResult;
+    finalResult.posFixa[0] = '\0'; // Limpa o resultado anterior
 
+    char copia[max_express];
+    strncpy(copia, Str, max_express - 1);
+    copia[max_express - 1] = '\0';
+
+    char *token = strtok(copia, " ");
     while (token != NULL) {
-        char c = token[0];
-        if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
-            strcat(finalResult.inFixa, token);
-            strcat(finalResult.inFixa, " ");
-        } else {
-            int prec;
-            if (strcmp(token, "^") == 0) {
-                prec = 3;
-            } else if (strcmp(token, "*") == 0 || strcmp(token, "/") == 0 || strcmp(token, "%") == 0) {
-                prec = 2;
-            } else {
-                prec = 1; 
+        if (isdigit(token[0]) || (strlen(token) > 1 && isdigit(token[1])) || isalpha(token[0])) {
+            strcat(finalResult.posFixa, token);
+            strcat(finalResult.posFixa, " ");
+        } 
+        else if (strcmp(token, "(") == 0) {
+            InserirChar(&operadores, token);
+        } 
+        else if (strcmp(token, ")") == 0) {
+            char op[max_express];
+            RetirarChar(&operadores, op);
+            while (strcmp(op, "(") != 0) {
+                strcat(finalResult.posFixa, op);
+                strcat(finalResult.posFixa, " ");
+                RetirarChar(&operadores, op);
             }
+        } 
+        else { // Se for um operador
             while (operadores.top >= 0) {
                 char topo[max_express];
                 strcpy(topo, operadores.items[operadores.top].expressao);
-
-                int precTopo;
-                if (strcmp(topo, "^") == 0) {
-                    precTopo = 3;
-                } else if (strcmp(topo, "*") == 0 || strcmp(topo, "/" ) == 0 || strcmp(topo, "%" ) == 0) {
-                    precTopo = 2;
-                } else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) {
-                    precTopo = 1;
-                } else {
-                    precTopo = 0;
-                }
-
-                if (precTopo >= prec) {
-                    RetirarChar(&operadores, topo);
-                    strcat(finalResult.inFixa, topo);
-                    strcat(finalResult.inFixa, " ");
+                if ((prioridade(topo) >= prioridade(token)) && !associativoADireita(token)) {
+                    char op[max_express];
+                    RetirarChar(&operadores, op);
+                    strcat(finalResult.posFixa, op);
+                    strcat(finalResult.posFixa, " ");
                 } else {
                     break;
                 }
@@ -134,8 +139,8 @@ char* getFormaPosFixa(char *Str) {
     while (operadores.top >= 0) {
         char op[max_express];
         RetirarChar(&operadores, op);
-        strcat(finalResult.inFixa, op);
-        strcat(finalResult.inFixa, " ");
+        strcat(finalResult.posFixa, op);
+        strcat(finalResult.posFixa, " ");
     }
-    return finalResult.inFixa;
+    return finalResult.posFixa;
 }
