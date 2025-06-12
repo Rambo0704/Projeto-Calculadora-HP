@@ -7,17 +7,20 @@
 
 #define max_express 512
 #define max_itens 50
-typedef struct 
-{
+
+typedef struct {
     char expressao[max_express];
 } Item;
+
 typedef struct {
     Item items[max_itens];
     int top;
 } Pilha_Caracter;
+
 void CriarPilha_Caracter(Pilha_Caracter *s) {
     s->top = -1;
 }
+
 void InserirChar(Pilha_Caracter *s, const char* value) {
     if (s->top >= max_itens - 1) {
         printf("Erro: Estouro da pilha de strings!\n");
@@ -28,16 +31,6 @@ void InserirChar(Pilha_Caracter *s, const char* value) {
 
 void RetirarChar(Pilha_Caracter *s, char* value) {
     strcpy(value, s->items[(s->top)--].expressao);
-}
-
-int prioridade(const char* op) {
-    if (strcmp(op, "^") == 0) return 4;
-    if (strcmp(op, "*") == 0 || strcmp(op, "/" ) == 0 || strcmp(op, "%") == 0) return 3;
-    if (strcmp(op, "+") == 0 || strcmp(op, "-") == 0) return 2;
-    return 0;
-}
-bool associativoADireita(const char* op) {
-    return (strcmp(op, "^") == 0);
 }
 
 char* getFormaInFixa(char *Str) {
@@ -90,27 +83,40 @@ char* getFormaInFixa(char *Str) {
     RetirarChar(&pilha, finalResult.inFixa);
     return finalResult.inFixa;
 }
+
 char *getFormaPosFixa(char *Str) {
     Pilha_Caracter operadores;
     CriarPilha_Caracter(&operadores);
 
     static Expressao finalResult;
-    finalResult.posFixa[0] = '\0'; // Limpa o resultado anterior
+    finalResult.posFixa[0] = '\0';
 
-    char copia[max_express];
-    strncpy(copia, Str, max_express - 1);
-    copia[max_express - 1] = '\0';
+    char token[max_express];
+    int i = 0, j = 0;
 
-    char *token = strtok(copia, " ");
-    while (token != NULL) {
-        if (isdigit(token[0]) || (strlen(token) > 1 && isdigit(token[1])) || isalpha(token[0])) {
+    while (Str[i] != '\0') {
+        if (isspace(Str[i])) {
+            i++;
+            continue;
+        }
+        //número ou variável 
+        if (isdigit(Str[i]) || isalpha(Str[i])) {
+            j = 0;
+            while (isdigit(Str[i]) || isalpha(Str[i])) {
+                token[j++] = Str[i++];
+            }
+            token[j] = '\0';
             strcat(finalResult.posFixa, token);
             strcat(finalResult.posFixa, " ");
-        } 
-        else if (strcmp(token, "(") == 0) {
-            InserirChar(&operadores, token);
-        } 
-        else if (strcmp(token, ")") == 0) {
+        }
+        //parêntese esquerdo
+        else if (Str[i] == '(') {
+            InserirChar(&operadores, "(");
+            i++;
+        }
+
+        //parêntese direito
+        else if (Str[i] == ')') {
             char op[max_express];
             RetirarChar(&operadores, op);
             while (strcmp(op, "(") != 0) {
@@ -118,12 +124,29 @@ char *getFormaPosFixa(char *Str) {
                 strcat(finalResult.posFixa, " ");
                 RetirarChar(&operadores, op);
             }
-        } 
-        else { // Se for um operador
+            i++;
+        }
+
+        //operador
+        else {
+            char op1[2] = {Str[i], '\0'};
+
             while (operadores.top >= 0) {
                 char topo[max_express];
                 strcpy(topo, operadores.items[operadores.top].expressao);
-                if ((prioridade(topo) >= prioridade(token)) && !associativoADireita(token)) {
+
+                int p_topo = 0, p_token = 0;
+                if (strcmp(topo, "^") == 0) p_topo = 4;
+                else if (strcmp(topo, "*") == 0 || strcmp(topo, "/") == 0 || strcmp(topo, "%") == 0) p_topo = 3;
+                else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) p_topo = 2;
+
+                if (strcmp(op1, "^") == 0) p_token = 4;
+                else if (strcmp(op1, "*") == 0 || strcmp(op1, "/") == 0 || strcmp(op1, "%") == 0) p_token = 3;
+                else if (strcmp(op1, "+") == 0 || strcmp(op1, "-") == 0) p_token = 2;
+
+                bool direita = (strcmp(op1, "^") == 0);
+
+                if ((p_topo >= p_token) && !direita) {
                     char op[max_express];
                     RetirarChar(&operadores, op);
                     strcat(finalResult.posFixa, op);
@@ -132,15 +155,17 @@ char *getFormaPosFixa(char *Str) {
                     break;
                 }
             }
-            InserirChar(&operadores, token);
+            InserirChar(&operadores, op1);
+            i++;
         }
-        token = strtok(NULL, " ");
     }
+
     while (operadores.top >= 0) {
         char op[max_express];
         RetirarChar(&operadores, op);
         strcat(finalResult.posFixa, op);
         strcat(finalResult.posFixa, " ");
     }
+
     return finalResult.posFixa;
 }

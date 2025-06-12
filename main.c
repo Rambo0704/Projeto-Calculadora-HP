@@ -6,7 +6,7 @@
 #include "calculadora.h"
 
 int main() {
-    char expr[] = "(3 + 4) * 5";
+    char expr[] = "8 + (5 * (2 + 4))";
     printf("%s\n", getFormaPosFixa(expr));
     return 0;
 }
