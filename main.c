@@ -6,7 +6,18 @@
 #include "calculadora.h"
 
 int main() {
-    char expr[] = "8 + (5 * (2 + 4))";
-    printf("%s\n", getFormaPosFixa(expr));
+    char *infx = getFormaInFixa("3 4 + 5 *");
+    printf("Forma Infixa: %s\n", infx);
+
+    char *posfx = getFormaPosFixa("(3 + 4) * 5");
+    printf("Forma Posfixa: %s\n", posfx);
+
+    float valorposfx = getValorPosFixa("3 4 + 5 *");
+    printf("Valor Posfixa: %.2f\n", valorposfx);
+
+    float valorinfix = getValorInFixa("(3 + 4) * 5");
+    printf("Valor Infixa: %.2f\n", valorinfix);
+
     return 0;
 }
+
