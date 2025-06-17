@@ -112,11 +112,13 @@ char *getFormaPosFixa(char *Str) {
     prepararExpressao(Str, expressao);
     char token[max_express];
     int i = 0, j = 0;
+
     while (expressao[i] != '\0') {
         if (isspace(expressao[i])) {
             i++;
             continue;
         }
+
         if (isdigit(expressao[i]) || isalpha(expressao[i])) {
             j = 0;
             while (isdigit(expressao[i]) || isalpha(expressao[i])) {
@@ -131,7 +133,7 @@ char *getFormaPosFixa(char *Str) {
         } else if (expressao[i] == ')') {
             char op[max_express];
             RetirarChar(&operadores, op);
-            while (strcmp(op, "(")) {
+            while (strcmp(op, "(") != 0) {
                 strcat(finalResult.posFixa, op);
                 strcat(finalResult.posFixa, " ");
                 RetirarChar(&operadores, op);
@@ -143,13 +145,17 @@ char *getFormaPosFixa(char *Str) {
                 char topo[max_express];
                 strcpy(topo, operadores.items[operadores.top].expressao);
                 int p_topo = 0, p_token = 0;
-                if (!strcmp(topo, "^")) p_topo = 4;
-                else if (!strcmp(topo, "*") || !strcmp(topo, "/") || !strcmp(topo, "%")) p_topo = 3;
-                else if (!strcmp(topo, "+") || !strcmp(topo, "-")) p_topo = 2;
-                if (!strcmp(op1, "^")) p_token = 4;
-                else if (!strcmp(op1, "*") || !strcmp(op1, "/") || !strcmp(op1, "%")) p_token = 3;
-                else if (!strcmp(op1, "+") || !strcmp(op1, "-")) p_token = 2;
-                bool direita = (!strcmp(op1, "^"));
+
+                if (strcmp(topo, "^") == 0) p_topo = 4;
+                else if (strcmp(topo, "*") == 0 || strcmp(topo, "/") == 0 || strcmp(topo, "%") == 0) p_topo = 3;
+                else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) p_topo = 2;
+
+                if (strcmp(op1, "^") == 0) p_token = 4;
+                else if (strcmp(op1, "*") == 0 || strcmp(op1, "/") == 0 || strcmp(op1, "%") == 0) p_token = 3;
+                else if (strcmp(op1, "+") == 0 || strcmp(op1, "-") == 0) p_token = 2;
+
+                bool direita = (strcmp(op1, "^") == 0);
+
                 if ((p_topo >= p_token) && !direita) {
                     char op[max_express];
                     RetirarChar(&operadores, op);
@@ -161,12 +167,14 @@ char *getFormaPosFixa(char *Str) {
             i++;
         }
     }
+
     while (operadores.top >= 0) {
         char op[max_express];
         RetirarChar(&operadores, op);
         strcat(finalResult.posFixa, op);
         strcat(finalResult.posFixa, " ");
     }
+
     return finalResult.posFixa;
 }
 
