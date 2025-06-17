@@ -177,29 +177,29 @@ float getValorPosFixa(char *StrPosFixa) {
     strcpy(copia, StrPosFixa);
     char *token = strtok(copia, " ");
     while (token != NULL) {
-        if (!strcmp(token, "+") || !strcmp(token, "-") ||
-            !strcmp(token, "*") || !strcmp(token, "/") ||
-            !strcmp(token, "%") || !strcmp(token, "^")) {
+        if (strcmp(token, "+") == 0 || strcmp(token, "-") == 0 ||
+            strcmp(token, "*") == 0 || strcmp(token, "/") == 0 ||
+            strcmp(token, "%") == 0 || strcmp(token, "^") == 0) {
             float b = Desempilhar(&pilha);
             float a = Desempilhar(&pilha);
             float res = 0;
-            if (!strcmp(token, "+")) res = a + b;
-            else if (!strcmp(token, "-")) res = a - b;
-            else if (!strcmp(token, "*")) res = a * b;
-            else if (!strcmp(token, "/")) res = a / b;
-            else if (!strcmp(token, "%")) res = fmod(a, b);
-            else if (!strcmp(token, "^")) res = pow(a, b);
+            if (strcmp(token, "+") == 0) res = a + b;
+            else if (strcmp(token, "-") == 0) res = a - b;
+            else if (strcmp(token, "*") == 0) res = a * b;
+            else if (strcmp(token, "/") == 0) res = a / b;
+            else if (strcmp(token, "%") == 0) res = fmod(a, b);
+            else if (strcmp(token, "^") == 0) res = pow(a, b);
             Empilhar(&pilha, res);
-        } else if (!strcmp(token, "log") || !strcmp(token, "sen") ||
-                   !strcmp(token, "cos") || !strcmp(token, "tg") ||
-                   !strcmp(token, "raiz")) {
+        } else if (strcmp(token, "log") == 0 || strcmp(token, "sen") == 0 ||
+                   strcmp(token, "cos") == 0 || strcmp(token, "tg") == 0 ||
+                   strcmp(token, "raiz") == 0) {
             float a = Desempilhar(&pilha);
             float res = 0;
-            if (!strcmp(token, "log")) res = log10(a);
-            else if (!strcmp(token, "raiz")) res = sqrt(a);
-            else if (!strcmp(token, "sen")) res = sin(a * M_PI / 180);
-            else if (!strcmp(token, "cos")) res = cos(a * M_PI / 180);
-            else if (!strcmp(token, "tg")) res = tan(a * M_PI / 180);
+            if (strcmp(token, "log") == 0) res = log10(a);
+            else if (strcmp(token, "raiz") == 0) res = sqrt(a);
+            else if (strcmp(token, "sen") == 0) res = sin(a * M_PI / 180);
+            else if (strcmp(token, "cos") == 0) res = cos(a * M_PI / 180);
+            else if (strcmp(token, "tg") == 0) res = tan(a * M_PI / 180);
             Empilhar(&pilha, res);
         } else {
             Empilhar(&pilha, atof(token));
@@ -221,29 +221,29 @@ float getValorInFixa(char *StrInFixa) {
         if (isdigit(token[0]) || isalpha(token[0])) {
             strcat(posFixa, token);
             strcat(posFixa, " ");
-        } else if (!strcmp(token, "(")) {
+        } else if (strcmp(token, "(") == 0) {
             InserirChar(&operadores, token);
-        } else if (!strcmp(token, ")")) {
+        } else if (strcmp(token, ")") == 0) {
             char topo[max_express];
             RetirarChar(&operadores, topo);
-            while (strcmp(topo, "(")) {
+            while (strcmp(topo, "(") != 0) {
                 strcat(posFixa, topo);
                 strcat(posFixa, " ");
                 RetirarChar(&operadores, topo);
             }
         } else {
             int prioridade_token = 0;
-            if (!strcmp(token, "^")) prioridade_token = 4;
-            else if (!strcmp(token, "*") || !strcmp(token, "/") || !strcmp(token, "%")) prioridade_token = 3;
-            else if (!strcmp(token, "+") || !strcmp(token, "-")) prioridade_token = 2;
+            if (strcmp(token, "^") == 0) prioridade_token = 4;
+            else if (strcmp(token, "*") == 0 || strcmp(token, "/") == 0 || strcmp(token, "%") == 0) prioridade_token = 3;
+            else if (strcmp(token, "+") == 0 || strcmp(token, "-") == 0) prioridade_token = 2;
             while (operadores.top >= 0) {
                 char topo[max_express];
                 strcpy(topo, operadores.items[operadores.top].expressao);
                 int prioridade_topo = 0;
-                if (!strcmp(topo, "^")) prioridade_topo = 4;
-                else if (!strcmp(topo, "*") || !strcmp(topo, "/") || !strcmp(topo, "%")) prioridade_topo = 3;
-                else if (!strcmp(topo, "+") || !strcmp(topo, "-")) prioridade_topo = 2;
-                bool direita = (!strcmp(token, "^"));
+                if (strcmp(topo, "^") == 0) prioridade_topo = 4;
+                else if (strcmp(topo, "*") == 0 || strcmp(topo, "/") == 0 || strcmp(topo, "%") == 0) prioridade_topo = 3;
+                else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) prioridade_topo = 2;
+                bool direita = (strcmp(token, "^") == 0);
                 if (prioridade_topo >= prioridade_token && !direita) {
                     RetirarChar(&operadores, topo);
                     strcat(posFixa, topo);
