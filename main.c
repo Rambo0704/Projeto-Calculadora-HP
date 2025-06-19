@@ -6,18 +6,18 @@
 #include "calculadora.h"
 
 int main() {
-    char *infx = getFormaInFixa("3 4 + 5 *");
-    printf("Forma Infixa: %s\n", infx);
+    Expressao finalResult;
 
-    char *posfx = getFormaPosFixa("(3 + 4) * 5");
-    printf("Forma Posfixa: %s\n", posfx);
-
-    float valorposfx = getValorPosFixa("3 4 + 5 *");
-    printf("Valor Posfixa: %.2f\n", valorposfx);
-
-    float valorinfix = getValorInFixa("(3 + 4) * 5");
-    printf("Valor Infixa: %.2f\n", valorinfix);
-
+    char *posFixaGerada = getFormaPosFixa("sen(45) ^2 + 0.5");
+    printf("Pós-fixa gerada: %s\n", posFixaGerada);
+    
+    char *inFixaGerada = getFormaInFixa("0.5 45 sen 2 ^ +");
+    printf("In-fixa da string dada: %s\n", inFixaGerada);
+    
+    finalResult.Valor = getValorPosFixa("0.5 45 sen 2 ^ +");
+    printf("Valor da expressã pos fix: %.2f\n", finalResult.Valor);
+    
+    float valorInFixa = getValorInFixa("sen(45) ^2 + 0,5");
+    printf("Valor da expressão in-fixa: %.2f\n", valorInFixa);
     return 0;
 }
-

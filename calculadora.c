@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <ctype.h>
+#include <ctype.h>  //apos verificar a documentação vi que seria importante incluir esta biblioteca para usar isdigit,isalpha e isspace
 #include <string.h>
 #include "calculadora.h"
 #include "math.h"
@@ -119,18 +119,36 @@ char *getFormaPosFixa(char *Str) {
             continue;
         }
 
-        if (isdigit(expressao[i]) || isalpha(expressao[i])) {
+        if (isalpha(expressao[i])) {
             j = 0;
-            while (isdigit(expressao[i]) || isalpha(expressao[i])) {
+            while (isalpha(expressao[i])) {
+                token[j++] = expressao[i++];
+            }
+            token[j] = '\0';
+
+            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 ||
+                strcmp(token, "tg") == 0 || strcmp(token, "log") == 0 ||
+                strcmp(token, "raiz") == 0) {
+                InserirChar(&operadores, token);
+            } else {
+                strcat(finalResult.posFixa, token);
+                strcat(finalResult.posFixa, " ");
+            }
+        }
+        else if (isdigit(expressao[i])) {
+            j = 0;
+            while (isdigit(expressao[i])) {
                 token[j++] = expressao[i++];
             }
             token[j] = '\0';
             strcat(finalResult.posFixa, token);
             strcat(finalResult.posFixa, " ");
-        } else if (expressao[i] == '(') {
+        }
+        else if (expressao[i] == '(') {
             InserirChar(&operadores, "(");
             i++;
-        } else if (expressao[i] == ')') {
+        }
+        else if (expressao[i] == ')') {
             char op[max_express];
             RetirarChar(&operadores, op);
             while (strcmp(op, "(") != 0) {
@@ -138,8 +156,19 @@ char *getFormaPosFixa(char *Str) {
                 strcat(finalResult.posFixa, " ");
                 RetirarChar(&operadores, op);
             }
+            if (operadores.top >= 0) {
+                strcpy(op, operadores.items[operadores.top].expressao);
+                if (strcmp(op, "sen") == 0 || strcmp(op, "cos") == 0 ||
+                    strcmp(op, "tg") == 0 || strcmp(op, "log") == 0 ||
+                    strcmp(op, "raiz") == 0) {
+                    RetirarChar(&operadores, op);
+                    strcat(finalResult.posFixa, op);
+                    strcat(finalResult.posFixa, " ");
+                }
+            }
             i++;
-        } else {
+        }
+        else {
             char op1[2] = {expressao[i], '\0'};
             while (operadores.top >= 0) {
                 char topo[max_express];
@@ -177,7 +206,6 @@ char *getFormaPosFixa(char *Str) {
 
     return finalResult.posFixa;
 }
-
 float getValorPosFixa(char *StrPosFixa) {
     Pilha_Float pilha;
     CriarPilha_Float(&pilha);
@@ -218,55 +246,7 @@ float getValorPosFixa(char *StrPosFixa) {
 }
 
 float getValorInFixa(char *StrInFixa) {
-    Pilha_Caracter operadores;
-    CriarPilha_Caracter(&operadores);
-    static char posFixa[max_express];
-    posFixa[0] = '\0';
-    char expressao[max_express] = "";
-    prepararExpressao(StrInFixa, expressao);
-    char *token = strtok(expressao, " ");
-    while (token != NULL) {
-        if (isdigit(token[0]) || isalpha(token[0])) {
-            strcat(posFixa, token);
-            strcat(posFixa, " ");
-        } else if (strcmp(token, "(") == 0) {
-            InserirChar(&operadores, token);
-        } else if (strcmp(token, ")") == 0) {
-            char topo[max_express];
-            RetirarChar(&operadores, topo);
-            while (strcmp(topo, "(") != 0) {
-                strcat(posFixa, topo);
-                strcat(posFixa, " ");
-                RetirarChar(&operadores, topo);
-            }
-        } else {
-            int prioridade_token = 0;
-            if (strcmp(token, "^") == 0) prioridade_token = 4;
-            else if (strcmp(token, "*") == 0 || strcmp(token, "/") == 0 || strcmp(token, "%") == 0) prioridade_token = 3;
-            else if (strcmp(token, "+") == 0 || strcmp(token, "-") == 0) prioridade_token = 2;
-            while (operadores.top >= 0) {
-                char topo[max_express];
-                strcpy(topo, operadores.items[operadores.top].expressao);
-                int prioridade_topo = 0;
-                if (strcmp(topo, "^") == 0) prioridade_topo = 4;
-                else if (strcmp(topo, "*") == 0 || strcmp(topo, "/") == 0 || strcmp(topo, "%") == 0) prioridade_topo = 3;
-                else if (strcmp(topo, "+") == 0 || strcmp(topo, "-") == 0) prioridade_topo = 2;
-                bool direita = (strcmp(token, "^") == 0);
-                if (prioridade_topo >= prioridade_token && !direita) {
-                    RetirarChar(&operadores, topo);
-                    strcat(posFixa, topo);
-                    strcat(posFixa, " ");
-                } else break;
-            }
-            InserirChar(&operadores, token);
-        }
-        token = strtok(NULL, " ");
-    }
-    while (operadores.top >= 0) {
-        char topo[max_express];
-        RetirarChar(&operadores, topo);
-        strcat(posFixa, topo);
-        strcat(posFixa, " ");
-    }
-    return getValorPosFixa(posFixa);
+    char *posfixa = getFormaPosFixa(StrInFixa);
+    return getValorPosFixa(posfixa);
 }
+
