@@ -1,15 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <ctype.h>  //apos verificar a documentação vi que seria importante incluir esta biblioteca para usar isdigit,isalpha e isspace
+#include <ctype.h> //apos ler a documentalção, percebi que a biblioteca ctype.h é necessária para usar funções como isspace, isalpha, isdigit, etc.
 #include <string.h>
-#include "calculadora.h"
-#include "math.h"
+#include <math.h>
 
 #define max_express 512
 #define max_itens 50
 #define max_float_itens 100
-#define M_PI 3.14159265358979323846 
+#define M_PI 3.14159265358979323846
+
+typedef struct {
+    char inFixa[max_express];
+    char posFixa[max_express];
+    float Valor;
+} Expressao;
 
 typedef struct {
     char expressao[max_express];
@@ -22,19 +27,8 @@ typedef struct {
 
 typedef struct {
     float items[max_float_itens];
-    int top; 
+    int top;
 } Pilha_Float;
-
-void prepararExpressao(const char *entrada, char *saida) {
-    while (*entrada) {
-        if (strchr("()+-*/%^", *entrada)) {
-            sprintf(saida + strlen(saida), " %c ", *entrada);
-        } else {
-            strncat(saida, entrada, 1);
-        }
-        entrada++;
-    }
-}
 
 void CriarPilha_Caracter(Pilha_Caracter *s) {
     s->top = -1;
@@ -66,12 +60,12 @@ float Desempilhar(Pilha_Float *p) {
 char* getFormaInFixa(char *Str) {
     Pilha_Caracter pilha;
     CriarPilha_Caracter(&pilha);
-    
+
     static Expressao finalResult;
     char copia[max_express];
     strcpy(copia, Str);
     char *token = strtok(copia, " ");
-    
+
     while (token != NULL) {
         if (strcmp(token, "+") && strcmp(token, "-") &&
             strcmp(token, "*") && strcmp(token, "/") &&
@@ -108,47 +102,38 @@ char *getFormaPosFixa(char *Str) {
     CriarPilha_Caracter(&operadores);
     static Expressao finalResult;
     finalResult.posFixa[0] = '\0';
-    char expressao[max_express] = "";
-    prepararExpressao(Str, expressao);
+
     char token[max_express];
     int i = 0, j = 0;
 
-    while (expressao[i] != '\0') {
-        if (isspace(expressao[i])) {
+    while (Str[i] != '\0') {
+        if (isspace(Str[i])) {
             i++;
             continue;
         }
 
-        if (isalpha(expressao[i])) {
+        if (isalpha(Str[i])) {
             j = 0;
-            while (isalpha(expressao[i])) {
-                token[j++] = expressao[i++];
+            while (isalpha(Str[i])) {
+                token[j++] = Str[i++];
             }
             token[j] = '\0';
-
-            if (strcmp(token, "sen") == 0 || strcmp(token, "cos") == 0 ||
-                strcmp(token, "tg") == 0 || strcmp(token, "log") == 0 ||
-                strcmp(token, "raiz") == 0) {
-                InserirChar(&operadores, token);
-            } else {
-                strcat(finalResult.posFixa, token);
-                strcat(finalResult.posFixa, " ");
-            }
+            InserirChar(&operadores, token);
         }
-        else if (isdigit(expressao[i])) {
+        else if (isdigit(Str[i]) || (Str[i] == '.' && isdigit(Str[i + 1]))) {
             j = 0;
-            while (isdigit(expressao[i])) {
-                token[j++] = expressao[i++];
+            while (isdigit(Str[i]) || Str[i] == '.') {
+                token[j++] = Str[i++];
             }
             token[j] = '\0';
             strcat(finalResult.posFixa, token);
             strcat(finalResult.posFixa, " ");
         }
-        else if (expressao[i] == '(') {
+        else if (Str[i] == '(') {
             InserirChar(&operadores, "(");
             i++;
         }
-        else if (expressao[i] == ')') {
+        else if (Str[i] == ')') {
             char op[max_express];
             RetirarChar(&operadores, op);
             while (strcmp(op, "(") != 0) {
@@ -169,7 +154,7 @@ char *getFormaPosFixa(char *Str) {
             i++;
         }
         else {
-            char op1[2] = {expressao[i], '\0'};
+            char op1[2] = {Str[i], '\0'};
             while (operadores.top >= 0) {
                 char topo[max_express];
                 strcpy(topo, operadores.items[operadores.top].expressao);
@@ -206,6 +191,7 @@ char *getFormaPosFixa(char *Str) {
 
     return finalResult.posFixa;
 }
+
 float getValorPosFixa(char *StrPosFixa) {
     Pilha_Float pilha;
     CriarPilha_Float(&pilha);
@@ -246,7 +232,5 @@ float getValorPosFixa(char *StrPosFixa) {
 }
 
 float getValorInFixa(char *StrInFixa) {
-    char *posfixa = getFormaPosFixa(StrInFixa);
-    return getValorPosFixa(posfixa);
+    return getValorPosFixa(getFormaPosFixa(StrInFixa));
 }
-
